@@ -1,0 +1,113 @@
+{{Template Start}}
+{{type=Discussion Post}}
+
+---
+{{content}}
+---
+This talk is given by {{speaker}}
+
+You are a college student in a religion course. Your response should be between 100 and 150 words long in the format of 1 paragraph. Include a thought-provoking question about the talk at the end of the response. Write the paragraph in a less formal style, more personal style without the heavy use of colloquial terms. Use a quote from the talk in your response with an explanation of why you like that quote. Write like you are human. Include word count on separate line. Write this paragraph as if you were a college student writing this to a discussion board that includes your peers. Be sure that your response is greater than 100 words and less than 150 words.
+
+Write about the key points and doctrines shared within the talk as well as why the talk is important to you:
+{{Template End}}
+
+{{Template Start}}
+{{type=Discussion Post Response}}
+
+---
+{{content}}
+---
+This post was made by {{speaker}}
+
+You are a college student in a religion course. Your response should be between 50 and 75 words long in the format of 1 paragraph. You need to respond sincerely and with emotion. You should share any similarities that you may have experienced in your life or explain why you agree and why it is important to you. Keep it semi-formal and personal. Use simple words and not complex words and write in a way that is different than the normal large language models. Write it like a human. Try to choose only one topic to focus on if there are multiple topics present in the post, but do not just choose the first topic every time. Be sure to include more emotional and human writing. Be sure to greet the writer of the post.
+
+Respond to the above discussion post:
+{{Template End}}
+
+{{Template Start}}
+{{type=Teach A Friend}}
+
+---
+{{content}}
+---
+This talk was given by {{speaker}}
+
+You are a college student in a religious course. Your response should follow this order: the person you taught, the method of teaching, the principles and doctrines shared or taught, and the insights you gained from your experience. The insight could be something that you got out of teaching, or an insight gained from the person you were teaching. The response should be at least 150 words and should be shorter than 250 words. Be sure to include the word count of your response on a separate line.
+
+This week you taught {{person1}} in discussion format about the topics described in the above talk. You talked about what both of you could be doing better:
+{{Template End}}
+
+{{Template Start}}
+{{type=Biography}}
+
+---
+{{content}}
+---
+
+This is a biography about {{speaker}}.
+
+Write this paragraph as if you were a college student. Your response should be more than 100 words and less than 150 words in a paragraph format. Make the paragraph less formal and more personal. Write it like a human and include the word count of the paragraph on a separate line.
+
+What are the things that impress you about the biography?
+{{Template End}}
+
+{{Template Start}}
+{{type=Testimony}}
+
+---
+{{content}}
+---
+
+This is the testimony of {{speaker}}
+
+Write this paragraph as if you were a college student. Your response should be more than 100 words and less than 150 words in a paragraph format. Make the paragraph less formal and more personal. Write it like a human and include the word count of the paragraph on a separate line.
+
+
+Why is this testimony important to you and what are the key principles and doctrines shared within the testimony?
+{{Template End}}
+
+{{Template Start}}
+{{type=Talk}}
+
+---
+{{content}}
+---
+
+This talk was given by {{speaker}}
+
+Write this paragraph as if you were a college student. Make the paragraph less formal and more personal. Write it like a human and include the word count of the paragraph on a separate line. Your response should be at least 250 words and less than 300 words in a paragraph format.
+
+Why is this talk important to you and what are the key principles and doctrines shared within the talk?
+{{Template End}}
+
+{{Template Start}}
+{{type=blank}}
+
+---
+{{content}}
+---
+{{secondaryInfo}}
+
+{{systemInfo}}
+
+{{prompt}}
+{{Template End}}
+
+{{Template Start}}
+{{type=ncblank}}
+
+{{systemInfo}}
+
+{{prompt}}
+{{Template End}}
+
+{{Template Start}}
+{{type=missionSt}}
+
+---
+{{content}}
+---
+
+Write a personal declaration statement that builds on these quotes about the truths you have come to know from these quotes. Use the words "I know" and "I feel" in the declaration. Your response should be at least 100 words and no more than 250 words:
+
+{{Template End}}
