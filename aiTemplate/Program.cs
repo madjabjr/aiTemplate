@@ -1,349 +1,433 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 
-
-public class Program
+namespace aiTemplate
 {
-    private enum MainMenuActions : int
+    public class Program
     {
-        invalid = 0,
-        createTemplate = 1,
-        fillTemplate = 2,
-        exit = 3,
-        help = 4
-    }
-
-    private static Dictionary<int, string> tempChoices;
-
-    private static string tempMenu = "";
-
-    private static bool changedTemplates = false;
-
-    private static readonly string mainMenu = "1. Create Template\n" +
-        "2. Fill Templates\n" +
-        "3. Exit\n" +
-        "4. Help or More Info\n";
-
-
-    public static void Main(string[] args)
-    {
-        TemplateProcessor processor = new TemplateProcessor();
-        if (processor.templates.Count != 0 )
+        public enum MainMenuActions : int
         {
-            processor.templates.Clear();
+            invalid = 0,
+            createTemplate = 1,
+            fillTemplate = 2,
+            deleteTemplate = 3,
+            modifyTemplate = 4,
+            help = 5,
+            exit = 6
         }
-        
-        processor.ReadTemplates(@"aipromptsTemplate.txt");
-        do
+
+        public enum ModifyMenuActions : int
         {
-            Console.WriteLine(mainMenu);
-            int userChoice;
-            if (TryGetInput(out userChoice))
+            invalid = 0,
+            SystemInfo = 1,
+            SecondaryInfo = 2,
+            Prompt = 3,
+            TemplateName = 4,
+            Exit = 5
+        }
+
+        public Dictionary<int, template> tempChoices = new Dictionary<int, template> { };
+
+        public bool changedTemplates = false;
+
+        public static void Main(string[] args)
+        {
+
+            //File.Copy(@"aipromptsTemplateResc.txt", Path.Combine(Environment.CurrentDirectory, "aipromptsTemplate.txt"), true);
+            TemplateProcessor processor = new TemplateProcessor();
+            if (processor.templates.Count != 0)
             {
-                if (userChoice == (int)MainMenuActions.exit)
+                processor.templates.Clear();
+            }
+            Program pInst = new Program();
+            List<menusRes> menus = jsonHandler.LoadMenus();
+            menusRes mainMenu = new menusRes();
+            foreach (menusRes menu in menus)
+            {
+                if (menu.Menuname == "mainMenu") { mainMenu = menu; }
+            }
+            List<template> templates = jsonHandler.LoadTemplates();
+            do
+            {
+                if (pInst.changedTemplates)
                 {
-                    break;
+                    templates = jsonHandler.LoadTemplates();
+
                 }
-                handleMainMenuAction((MainMenuActions)userChoice, processor);
-            }
-            else
-            {
-                Console.WriteLine("Please Enter only one number from options and Try Again!");
-                Console.Clear();
-            }
-        } while (true);    
-        
-    }
-    public static bool TryGetInput(out int input)
-    {
-        return int.TryParse(Console.ReadLine(), out input);
-    }
-
-   
-    private static void handleMainMenuAction(MainMenuActions action, TemplateProcessor processor)
-    {
-        // Ensure that the enum is defined
-        if (!Enum.IsDefined(typeof(MainMenuActions), action))
-        {
-            Console.WriteLine("Not Valid Action! Try Again!");
-            return;
-        }
-
-        switch (action)
-        {
-            case MainMenuActions.createTemplate:
-                do
+                Console.WriteLine(mainMenu.Instructions);
+                int userChoice;
+                if (pInst.TryGetInput(out userChoice))
                 {
-                    processor.createNewTemplate(@"aipromptsTemplate.txt");
-                } while (askUserForRepeat("Continue"));
-              
-                break;
-
-            case MainMenuActions.fillTemplate:
-                do {
-                    Console.WriteLine("Available Templates:\n");
-                    int i = 1;
-                    StringBuilder stringBuilder = new StringBuilder();
-                    foreach (var templateType in processor.templates.Keys)
+                    if (userChoice == (int)MainMenuActions.exit)
                     {
-                        stringBuilder.Append($"{i}. {templateType}\n");
-                        tempChoices.Add(i,templateType);
-                        i++;
+                        break;
                     }
-                    tempChoices.Add(i, "Exit");
-                    Console.WriteLine(stringBuilder.ToString());
-                    bool Input = int.TryParse(Console.ReadLine(), out int templateInput);
-                    if (Input)
-                    {
-                        
-                        string processedTemplate = processor.ProcessTemplate(tempChoices[templateInput]);
-                        Console.WriteLine(processedTemplate);
-                        if (processor.getYesNo("Do you want to copy to Clipboard?\n", "Y/N"))
-                        {
-                            try
-                            {
-                                Clipboard.SetText(processedTemplate);
-                                Console.WriteLine("Copied to Clipboard!\n");
-                            }
-                            catch (Exception e) { Console.WriteLine(e.ToString()); }
-                        }
-                        string outputFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"output_{Guid.NewGuid()}.txt"); // Generate a unique file name
-                        File.WriteAllText(outputFilePath, processedTemplate);
-                        Console.WriteLine($"Template has been filled and saved as {outputFilePath}");
-                    }   
-                } while (askUserForRepeat("Continue"));
-                break;
-            case MainMenuActions.help:
-                Console.WriteLine("Enter Help Stuff Here");
-                break;
+                    pInst.handleMainMenuAction((MainMenuActions)userChoice, processor, templates, menus);
+                }
+                else
+                {
+                    Console.WriteLine("Please Enter only one number from options and Try Again!");
+                    Console.Clear();
+                }
+            } while (true);
 
-            case MainMenuActions.invalid:
-            default:
-                Console.WriteLine("Something went Wrong! Try Again!");
-                break;
         }
-    }
-
-    private static bool askUserForRepeat(string repeatText)
-    {
-        Console.WriteLine("1. " + repeatText);
-        Console.WriteLine("2. Back to Main Menu\n");
-        bool Input = int.TryParse(Console.ReadLine(), out int userInput);
-        if (Input)
+        public bool TryGetInput(out int input)
         {
-            if (userInput == 1)
+            return int.TryParse(Console.ReadLine(), out input);
+        }
+
+
+        public void handleMainMenuAction(MainMenuActions action, TemplateProcessor processor, List<template> templates, List<menusRes> menus)
+        {
+            // Ensure that the enum is defined
+            if (!Enum.IsDefined(typeof(MainMenuActions), action))
             {
-                return true;
+                Console.WriteLine("Not Valid Action! Try Again!");
+                return;
+            }
+            menusRes createMenu = new menusRes();
+            menusRes modifyMenu = new menusRes();
+            foreach (menusRes menu in menus)
+            {
+                if (menu.Menuname == "createInstructions") { createMenu = menu; }
+                if (menu.Menuname == "modifySelect") { modifyMenu = menu; }
+            }
+            switch (action)
+            {
+                case MainMenuActions.createTemplate:
+                    do
+                    {
+                        processor.createNewTemplate(createMenu);
+                    } while (askUserForRepeat("Continue"));
+
+                    break;
+
+                case MainMenuActions.fillTemplate:
+                    do
+                    {
+                        Console.WriteLine("Available Templates:\n");
+                        int i = 1;
+                        tempChoices.Clear();
+                        StringBuilder stringBuilder = new StringBuilder();
+                        foreach (template template in templates)
+                        {
+                            stringBuilder.Append($"{i}. {template.name}\n");
+                            if (!tempChoices.ContainsValue(template))
+                            {
+                                if (tempChoices.ContainsKey(i))
+                                {
+                                    i = tempChoices.Count;
+                                }
+                                tempChoices.Add(i, template);
+                            }
+                            i++;
+                        }
+                        tempChoices.Add(i, null);
+                        stringBuilder.Append($"{i}. Exit");
+                        Console.WriteLine(stringBuilder.ToString());
+                        bool Input = int.TryParse(Console.ReadLine(), out int templateInput);
+                        if (Input)
+                        {
+                            if (tempChoices[templateInput].Equals(null))
+                            {
+                                Console.Clear();
+                                break;
+                            }
+                            string processedTemplate = processor.fillTemplate(tempChoices[templateInput]);
+                            //string processedTemplate = processor.ProcessTemplate(tempChoices[templateInput]);
+                            Console.WriteLine(processedTemplate);
+                            if (Utilities.getYesNo("Do you want to copy to Clipboard?", "Y/N"))
+                            {
+                                try
+                                {
+                                    Clipboard.SetText(processedTemplate);
+                                    Console.WriteLine("Copied to Clipboard!\n");
+                                }
+                                catch (Exception e) { Console.WriteLine(e.ToString()); }
+                            }
+                            string outputFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"filledTemplate_{Guid.NewGuid()}.txt"); // Generate a unique file name
+                            File.WriteAllText(outputFilePath, processedTemplate);
+                            Console.WriteLine($"Template has been filled and saved as {outputFilePath}");
+                        }
+                    } while (askUserForRepeat("Continue"));
+                    break;
+                case MainMenuActions.deleteTemplate:
+                    do
+                    {
+                        Console.WriteLine("Available Templates:\n");
+                        int i = 1;
+                        tempChoices.Clear();
+                        StringBuilder stringBuilder = new StringBuilder();
+                        foreach (template template in templates)
+                        {
+                            stringBuilder.Append($"{i}. {template.name}\n");
+                            if (!tempChoices.ContainsValue(template))
+                            {
+                                if (tempChoices.ContainsKey(i))
+                                {
+                                    i = tempChoices.Count;
+                                }
+                                tempChoices.Add(i, template);
+                            }
+                            i++;
+                        }
+                        tempChoices.Add(i, null);
+                        stringBuilder.Append($"{i}. Exit");
+                        Console.WriteLine(stringBuilder.ToString());
+                        bool Input = int.TryParse(Console.ReadLine(), out int templateInput);
+                        if (Input)
+                        {
+                            if (tempChoices[templateInput].Equals(null))
+                            {
+                                Console.Clear();
+                                break;
+                            }
+                            jsonHandler.removeTemplate(tempChoices[templateInput]);
+                        }
+
+
+                    } while (askUserForRepeat("Continue"));
+                    break;
+                case MainMenuActions.modifyTemplate:
+                    do
+                    {
+                        Console.WriteLine("Available Templates:\n");
+                        int i = 1;
+                        tempChoices.Clear();
+                        StringBuilder stringBuilder = new StringBuilder();
+                        foreach (template template in templates)
+                        {
+                            stringBuilder.Append($"{i}. {template.name}\n");
+                            if (!tempChoices.ContainsValue(template))
+                            {
+                                if (tempChoices.ContainsKey(i))
+                                {
+                                    i = tempChoices.Count;
+                                }
+                                tempChoices.Add(i, template);
+                            }
+                            i++;
+                        }
+                        tempChoices.Add(i, null);
+                        stringBuilder.Append($"{i}. Exit");
+                        Console.WriteLine(stringBuilder.ToString());
+                        template chosenTemplate = null;
+                        bool Input = int.TryParse(Console.ReadLine(), out int templateInput);
+                        if (Input)
+                        {
+                            if (tempChoices[templateInput].Equals(null))
+                            {
+                                Console.Clear();
+                                break;
+                            }
+                            chosenTemplate = tempChoices[templateInput];
+                            do
+                            {
+                                Console.WriteLine(modifyMenu); ;
+                                int userChoice;
+                                if (TryGetInput(out userChoice))
+                                {
+                                    if (userChoice == (int)ModifyMenuActions.Exit)
+                                    {
+                                        break;
+                                    }
+                                    handleModifyMenuAction((ModifyMenuActions)userChoice, chosenTemplate);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Please Enter only one number from options and Try Again!");
+                                    Console.Clear();
+                                }
+                            } while (true);
+                        }
+
+
+                    } while (askUserForRepeat("Continue"));
+                    break;
+                case MainMenuActions.help:
+                    Console.WriteLine("Enter Help Stuff Here");
+                    break;
+
+                case MainMenuActions.invalid:
+                default:
+                    Console.WriteLine("Something went Wrong! Try Again!");
+                    break;
+            }
+        }
+
+        private bool askUserForRepeat(string repeatText)
+        {
+            Console.WriteLine("\n1. " + repeatText);
+            Console.WriteLine("2. Back to Main Menu\n");
+            bool Input = int.TryParse(Console.ReadLine(), out int userInput);
+            if (Input)
+            {
+                if (userInput == 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    // Go back to main menu -- user ended repeat.
+                    Console.Clear();
+                    return false;
+                }
             }
             else
             {
-                // Go back to main menu -- user ended repeat.
+                // Go back to main menu -- invalid user input.
                 Console.Clear();
                 return false;
             }
         }
-        else
+        public void handleModifyMenuAction(ModifyMenuActions action,template template)
         {
-            // Go back to main menu -- invalid user input.
-            Console.Clear();
-            return false;
-        }
-    }
-}
-
-
-public class TemplateProcessor
-{
-    public readonly Dictionary<string, string> templates = new Dictionary<string, string>();
-
-    public static readonly string createInstructions = "You can add additional variables to templates such as speaker by using {{speaker}} within any of the template blocks: \n" +
-        "Name of Template should be something simple and small.\n" +
-        "System Info refers to the how AI should act. For example \"Write like a College Student\".\n" +
-        "Secondary Info refers to any additional information the AI needs, like the speaker or the person who wrote it.\n" +
-        "Prompt is where you write the main quesiton or instructions for the AI\n";
-
-
-    public void ReadTemplates(string filePath)
-    {
-        string content = File.ReadAllText(filePath);
-
-        var regex = new Regex(@"{{Template Start}}(.*?){{Template End}}", RegexOptions.Singleline);
-        var matches = regex.Matches(content);
-
-        foreach (Match match in matches)
-        {
-            //string templateType = match.Groups[3].Value;
-            string templateContent = match.Groups[1].Value;
-            Regex regex1 = new Regex(@"{{type=([^}]+)}}");
-            string templateType = regex1.Match(templateContent).Value;
-            templateContent = templateContent.Replace("\r\n" + templateType + "\r\n", "");
-            templateType = templateType.Substring(7, templateType.Length - 9);
-            templates.Add(templateType, templateContent);
-        }
-    }
-
-    public string GetUserInput(string templateType, string placeholder, bool clipBool)
-    {
-        if (clipBool)
-        {
-            return Clipboard.GetText();
-        }
-        else
-        {
-            if (placeholder == "content")
+            // Ensure that the enum is defined
+            if (!Enum.IsDefined(typeof(MainMenuActions), action))
             {
-                return getMultiLineInput();
-            }
-            else
-            {
-                Console.WriteLine($"Enter value for '{placeholder}':");
-                return Console.ReadLine();
+                Console.WriteLine("Not Valid Action! Try Again!");
+                return;
             }
             
+            switch (action)
+            {
+                case ModifyMenuActions.SystemInfo:
+                    Console.WriteLine("Current System Info: \n");
+                    Console.WriteLine(template.systemInfo + "\n\n");
+                    Console.WriteLine("Enter New System Info: \n");
+                    template.systemInfo = Utilities.getMultiLineInput();
+                    jsonHandler.modifyTemplate(template);
+                    break;
+                case ModifyMenuActions.SecondaryInfo:
+                    Console.WriteLine("Current Secondary Info: \n");
+                    Console.WriteLine(template.secondaryInfo + "\n\n");
+                    Console.WriteLine("Enter New Secondary Info: \n");
+                    template.secondaryInfo = Utilities.getMultiLineInput();
+                    jsonHandler.modifyTemplate(template);
+                    break;
+                case ModifyMenuActions.Prompt:
+                    Console.WriteLine("Current Prompt: \n");
+                    Console.WriteLine(template.prompt + "\n\n");
+                    Console.WriteLine("Enter New Prompt: \n");
+                    template.prompt = Utilities.getMultiLineInput();
+                    jsonHandler.modifyTemplate(template);
+                    break;
+                case ModifyMenuActions.TemplateName:
+                    Console.WriteLine("Current Template Name: \n");
+                    Console.WriteLine(template.name + "\n\n");
+                    Console.WriteLine("Enter New Template Name: \n");
+                    template.name = Utilities.getMultiLineInput();
+                    jsonHandler.modifyTemplate(template);
+                    break;
+                
+
+            }
         }
-        
     }
 
-    public string getMultiLineInput()
+
+
+    public class TemplateProcessor
     {
-        Console.WriteLine("Enter Text: ");
-        StringBuilder sb = new StringBuilder();
-        while (true)
-        {
-            string line = Console.ReadLine();
-            if (string.IsNullOrEmpty(line))
-            { break; }
-            sb.Append(line);
-        }
-        return sb.ToString();
-    }
+        public readonly Dictionary<string, string> templates = new Dictionary<string, string>();
 
-    public string ProcessTemplate(string templateType)
-    {
-        if (!templates.TryGetValue(templateType, out string template))
+        private enum templateSections : int
         {
-            throw new ArgumentException($"Template type '{templateType}' not found");
+            invalid = 0,
+            systemInfo = 1,
+            prompt = 2,
+            secondaryInfo = 3,
+            templateName = 4,
+            exit = 5
         }
 
-        var regex = new Regex(@"{{\s*(?!\\})([^}]+)\s*}}");
-        var matches = regex.Matches(template);
 
-        string processedTemplate = template;
-        foreach (Match match in matches)
+
+        public static string GetUserInput(string placeholder)
         {
-            string placeholder = match.Groups[1].Value; 
-            var clipBool = getYesNo("Use value From Clipboard?", "Y/N");
-            string userInput = GetUserInput(templateType, placeholder, clipBool);
-            processedTemplate = processedTemplate.Replace("{{" + placeholder + "}}", userInput);
+                    Console.WriteLine($"Enter value for '{placeholder}':");
+                    return Utilities.getMultiLineInput();
 
         }
 
-        return processedTemplate;
-    }
-    public void createNewTemplate(string document)
-    {
-        Console.WriteLine(createInstructions);
-        Console.WriteLine("What is the name of the new Template?");
-        string newTempname = Console.ReadLine();
-        Console.WriteLine("What is the Prompt?");
-        string prompt = Console.ReadLine();
-        Console.WriteLine("Enter System Info: ");
-        string systemInfo = Console.ReadLine();
-        bool useSecondInfo = getYesNo("Would you like to Use Secondary Info?", "Y/N");
-        string secondinfo = "";
-        if (useSecondInfo)
+        public string fillTemplate(template template)
         {
-            Console.WriteLine("Enter Secondary Info: ");
-            secondinfo = Console.ReadLine();
-        }
-        using (StreamWriter output = new StreamWriter(document))
-        {
-            output.NewLine = "{{Template Start}}";
-            output.NewLine = "{{type=" + newTempname + "}}" ;
-            output.NewLine = "";
-            output.NewLine = "---";
-            output.NewLine = "{{content}}";
-            output.NewLine = "---";
-            if (string.IsNullOrEmpty(secondinfo)) { output.NewLine = secondinfo; }
-            output.NewLine = "";
-            output.NewLine = systemInfo;
-            output.NewLine = "";
-            output.NewLine = prompt;
-            output.NewLine = "";
-            output.NewLine =
-            output.NewLine = "";
-            output.NewLine = "{{Template End}}";
+            string outputDir = Path.Combine(Environment.SpecialFolder.Desktop + $"filledTemplate-{template.name}.txt");
+            string processedTemplate = "";
+            StringBuilder sb = new StringBuilder();
+                sb.Append("---\n");
+                string content;
+                if (Utilities.getYesNo($"Use value From Clipboard for the Content?", "Y/N"))
+                {
+                    content = Clipboard.GetText();
+                }
+                else
+                {
+                    content = Utilities.getMultiLineInput();
+                }
+                sb.Append(content + "\n");
+                sb.Append("---\n\n");
+                if (template.hasSecondaryInfo)
+                {
+                    sb.Append(template.secondaryInfo +"\n");
+                }
+                sb.Append('\n');
+                sb.Append(template.systemInfo +"\n");
+                sb.Append("\n" + template.prompt +"\n");
+                if (template.otherVariables.Count > 0 )
+                {
+                    var regex = new Regex(@"{{\s*(?!\\})([^}]+)\s*}}");
+                    var matches = regex.Matches(sb.ToString());
 
-        }
+                    processedTemplate = sb.ToString();
+                    foreach (Match match in matches)
+                    {
+                        string placeholder = match.Groups[1].Value;
+                        var clipBool = Utilities.getYesNo($"Use value From Clipboard for '{placeholder}'?", "Y/N");
+                        string userInput = TemplateProcessor.GetUserInput(placeholder);
+                        processedTemplate = processedTemplate.Replace("{{" + placeholder + "}}", userInput);
+                    }
+                }
             
-           
-    }
-    public bool getYesNo(string question, string choices)
-    {
-        string checkString = "";
-        while (true)
-        {
-            Console.WriteLine(question + ": (" + choices + "): \n");
-            checkString = Console.ReadLine();
-            if ((checkString).ToUpper() == choices[0].ToString().ToUpper() || checkString.ToUpper() == choices[2].ToString().ToUpper())
-            {
-                break;
-            }
-            else
-            {
-                Console.WriteLine($"Please enter only {choices[0]} or {choices[2]} and Try Again!\n");
-            }
 
+            return processedTemplate;
         }
-        if (checkString.ToUpper() == choices[2].ToString().ToUpper())
+
+        public void createNewTemplate(menusRes menu)
         {
-            return false;
-        }
-        else
-        {
-            return true;
+            template newTemp = new template();
+            
+            Console.WriteLine(menu.Instructions);
+            Console.WriteLine("\nWhat is the name of the new Template?\n");
+            string newTempname = Utilities.ReadLineOrEscape();
+            if (newTempname == null) { return; }
+            newTemp.name = newTempname;
+            Console.WriteLine("\nWhat is the Prompt?\n");
+            string prompt = Utilities.ReadLineOrEscape();
+            if (prompt == null) { return; }
+            newTemp.prompt = prompt;
+            Console.WriteLine("\nEnter System Info: \n");
+            string systemInfo = Utilities.ReadLineOrEscape();
+            if (systemInfo == null) { return; }
+            newTemp.systemInfo = systemInfo;
+            bool useSecondInfo = Utilities.getYesNo("\nWould you like to Use Secondary Info?", "Y/N");
+            newTemp.hasSecondaryInfo = useSecondInfo;
+            if (useSecondInfo)
+            {
+                Console.WriteLine("\nEnter Secondary Info: ");
+                string secondinfo = secondinfo = Utilities.ReadLineOrEscape();
+                if (secondinfo == null) { return; }
+                newTemp.secondaryInfo = secondinfo;
+            }
+            else { newTemp.secondaryInfo = null; }
+            
+           jsonHandler.addTemplate(newTemp);
+
         }
     }
 }
-
-public static class Clipboard
-{
-    public static void SetText(string p_Text)
-    {
-        Thread STAThread = new Thread(
-            delegate ()
-            {
-                // Use a fully qualified name for Clipboard otherwise it
-                // will end up calling itself.
-                System.Windows.Clipboard.SetText(p_Text);
-            });
-        STAThread.SetApartmentState(ApartmentState.STA);
-        STAThread.Start();
-        STAThread.Join();
-    }
-
-    public static string GetText()
-    {
-        string clipString = "";
-
-        Thread staThread = new Thread(
-        delegate ()
-     {
-         {
-             clipString = System.Windows.Clipboard.GetText();
-         }
-
-     });
-        staThread.SetApartmentState(ApartmentState.STA);
-        staThread.Start();
-        staThread.Join();
-        return clipString;
-    }
-        
-}
-
