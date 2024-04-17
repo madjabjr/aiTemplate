@@ -2,11 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows.Input;
 
 namespace aiTemplate
 {
@@ -48,7 +46,9 @@ namespace aiTemplate
     {
         public static string getMultiLineInput(string prompt)
         {
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(prompt);
+            Console.ResetColor();
             ConsoleKeyInfo keyInfo = new ConsoleKeyInfo();
             StringBuilder sb = new StringBuilder();
             int index = 0;
@@ -99,7 +99,9 @@ namespace aiTemplate
             string checkString = "";
             while (true)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(question + ": (" + choices + "): \n");
+                Console.ResetColor();
                 checkString = Console.ReadLine();
                 if ((checkString).ToUpper() == choices[0].ToString().ToUpper() || checkString.ToUpper() == choices[2].ToString().ToUpper())
                 {
@@ -107,7 +109,9 @@ namespace aiTemplate
                 }
                 else
                 {
+                    Console.ForegroundColor= ConsoleColor.Red;
                     Console.WriteLine($"Please enter only {choices[0]} or {choices[2]} and Try Again!\n");
+                    Console.ResetColor();
                 }
 
             }
@@ -268,6 +272,7 @@ namespace aiTemplate
                 using (StreamWriter file = File.CreateText(tempFilename))
                 {
                     JsonSerializer serializer = new JsonSerializer();
+                    serializer.Formatting = Formatting.Indented;
                     serializer.Serialize(file, newTemplates);
                 }
                 // Delete original file
@@ -301,6 +306,7 @@ namespace aiTemplate
                 using (StreamWriter file = File.CreateText(tempFilename))
                 {
                     JsonSerializer serializer = new JsonSerializer();
+                    serializer.Formatting = Formatting.Indented;
                     serializer.Serialize(file, newTemplates);
                 }
                 // Delete original file
@@ -335,6 +341,7 @@ namespace aiTemplate
                 using (StreamWriter file = File.CreateText(tempFilename))
                 {
                     JsonSerializer serializer = new JsonSerializer();
+                    serializer.Formatting = Formatting.Indented;
                     serializer.Serialize(file, newTemplates);
                 }
                 // Delete original file

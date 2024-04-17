@@ -60,7 +60,9 @@ namespace aiTemplate
                 }
                 foreach (string instruction in mainMenu.Instructions)
                 {
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine(instruction);
+                    Console.ResetColor();
                 }
                 int userChoice;
                 if (pInst.TryGetInput(out userChoice))
@@ -73,7 +75,6 @@ namespace aiTemplate
                 }
                 else
                 {
-                    Console.WriteLine("Please Enter only one number from options and Try Again!");
                     Console.Clear();
                 }
             } while (true);
@@ -90,7 +91,9 @@ namespace aiTemplate
             // Ensure that the enum is defined
             if (!Enum.IsDefined(typeof(MainMenuActions), action))
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Not Valid Action! Try Again!");
+                Console.ResetColor();
                 return;
             }
             menusRes createMenu = new menusRes();
@@ -113,7 +116,9 @@ namespace aiTemplate
                 case MainMenuActions.fillTemplate:
                     do
                     {
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("Available Templates:\n");
+                        Console.ResetColor();
                         int i = 1;
                         tempChoices.Clear();
                         StringBuilder stringBuilder = new StringBuilder();
@@ -132,7 +137,9 @@ namespace aiTemplate
                         }
                         tempChoices.Add(i, null);
                         stringBuilder.Append($"{i}. Exit");
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine(stringBuilder.ToString());
+                        Console.ResetColor();
                         bool Input = int.TryParse(Console.ReadLine(), out int templateInput);
                         if (Input)
                         {
@@ -143,19 +150,26 @@ namespace aiTemplate
                             }
                             string processedTemplate = processor.fillTemplate(tempChoices[templateInput]);
                             //string processedTemplate = processor.ProcessTemplate(tempChoices[templateInput]);
+                            Console.BackgroundColor = ConsoleColor.DarkBlue;
                             Console.WriteLine(processedTemplate);
+                            Console.ResetColor();
                             if (Utilities.getYesNo("Do you want to copy to Clipboard?", "Y/N"))
                             {
                                 try
                                 {
                                     Clipboard.SetText(processedTemplate);
+                                    Console.ForegroundColor = ConsoleColor.Green;
                                     Console.WriteLine("Copied to Clipboard!\n");
+                                    Console.ResetColor();
                                 }
                                 catch (Exception e) { Console.WriteLine(e.ToString()); }
                             }
                             string outputFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"filledTemplate_{Guid.NewGuid()}.txt"); // Generate a unique file name
                             File.WriteAllText(outputFilePath, processedTemplate);
+                            Console.ForegroundColor = ConsoleColor.White;
+                            Console.BackgroundColor = ConsoleColor.Blue;
                             Console.WriteLine($"Template has been filled and saved as {outputFilePath}");
+                            Console.ResetColor();
                         }
                     } while (askUserForRepeat("Continue"));
                     break;
@@ -167,7 +181,9 @@ namespace aiTemplate
                             templates = jsonHandler.LoadTemplates();
                             changedTemplates = false;
                         }
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("Available Templates:\n");
+                        Console.ResetColor();
                         int i = 1;
                         tempChoices.Clear();
                         StringBuilder stringBuilder = new StringBuilder();
@@ -186,7 +202,9 @@ namespace aiTemplate
                         }
                         tempChoices.Add(i, null);
                         stringBuilder.Append($"{i}. Exit");
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine(stringBuilder.ToString());
+                        Console.ResetColor();
                         bool Input = int.TryParse(Console.ReadLine(), out int templateInput);
                         if (Input)
                         {
@@ -213,7 +231,9 @@ namespace aiTemplate
                             templates = jsonHandler.LoadTemplates();
                             changedTemplates = false;
                         }
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("Available Templates:\n");
+                        Console.ResetColor();
                         int i = 1;
                         tempChoices.Clear();
                         StringBuilder stringBuilder = new StringBuilder();
@@ -232,7 +252,9 @@ namespace aiTemplate
                         }
                         tempChoices.Add(i, null);
                         stringBuilder.Append($"{i}. Exit");
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine(stringBuilder.ToString());
+                        Console.ResetColor ();
                         template chosenTemplate = null;
                         bool Input = int.TryParse(Console.ReadLine(), out int templateInput);
                         if (Input)
@@ -245,9 +267,12 @@ namespace aiTemplate
                             chosenTemplate = tempChoices[templateInput];
                             do
                             {
+                                Console.Clear();
                                 foreach (string instruction in modifyMenu.Instructions)
                                 {
+                                    Console.ForegroundColor = ConsoleColor.Green;
                                     Console.WriteLine(instruction);
+                                    Console.ResetColor();
                                 }
                                 int userChoice;
                                 if (TryGetInput(out userChoice))
@@ -260,8 +285,9 @@ namespace aiTemplate
                                 }
                                 else
                                 {
+                                    Console.ForegroundColor = ConsoleColor.Red;
                                     Console.WriteLine("Please Enter only one number from options and Try Again!");
-                                    Console.Clear();
+                                    Console.ResetColor();
                                 }
                             } while (true);
                         }
@@ -278,7 +304,9 @@ namespace aiTemplate
                             templates = jsonHandler.LoadTemplates();
                             changedTemplates = false;
                         }
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("Available Templates:\n");
+                        Console.ResetColor();
                         int i = 1;
                         tempChoices.Clear();
                         StringBuilder stringBuilder = new StringBuilder();
@@ -297,7 +325,9 @@ namespace aiTemplate
                         }
                         tempChoices.Add(i, null);
                         stringBuilder.Append($"{i}. Exit");
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine(stringBuilder.ToString());
+                        Console.ResetColor();
                         bool Input = int.TryParse(Console.ReadLine(), out int templateInput);
                         if (Input)
                         {
@@ -306,25 +336,33 @@ namespace aiTemplate
                                 Console.Clear();
                                 break;
                             }
+                            Console.ForegroundColor = ConsoleColor.Cyan;
                             Console.WriteLine(processor.displayTempalte(tempChoices[templateInput]));
+                            Console.ResetColor();
                         }
                     } while (askUserForRepeat("Continue"));
                     break;
                 case MainMenuActions.help:
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Enter Help Stuff Here");
+                    Console.ResetColor();
                     break;
 
                 case MainMenuActions.invalid:
                 default:
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Something went Wrong! Try Again!");
+                    Console.ResetColor();
                     break;
             }
         }
 
         private bool askUserForRepeat(string repeatText)
         {
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("\n1. " + repeatText);
             Console.WriteLine("2. Back to Main Menu\n");
+            Console.ResetColor();
             bool Input = int.TryParse(Console.ReadLine(), out int userInput);
             if (Input)
             {
@@ -351,16 +389,22 @@ namespace aiTemplate
             // Ensure that the enum is defined
             if (!Enum.IsDefined(typeof(ModifyMenuActions), action))
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Not Valid Action! Try Again!");
+                Console.ResetColor();
                 return;
             }
             
             switch (action)
             {
                 case ModifyMenuActions.SystemInfo:
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Current System Info: \n");
+                    Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine(template.systemInfo + "\n\n");
+                    Console.ForegroundColor= ConsoleColor.Green;
                     Console.WriteLine("Enter New System Info: \n");
+                    Console.ResetColor();
                     template.systemInfo = Console.ReadLine();
                     if (template.systemInfo.Contains("{{") && template.systemInfo.Contains("}}"))
                     {
@@ -390,9 +434,13 @@ namespace aiTemplate
                 case ModifyMenuActions.SecondaryInfo:
                     if (template.hasSecondaryInfo)
                     {
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("Current Secondary Info: \n");
+                        Console.ForegroundColor = ConsoleColor.Blue;
                         Console.WriteLine(template.secondaryInfo + "\n\n");
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("Enter New Secondary Info: \n");
+                        Console.ResetColor();
                         template.secondaryInfo = Console.ReadLine();
                         if (template.secondaryInfo.Contains("{{") && template.secondaryInfo.Contains("}}"))
                         {
@@ -419,13 +467,16 @@ namespace aiTemplate
                     }
                     else
                     {
-                        Console.WriteLine("Selected does not have Secondary Information!");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Selected does not have Secondary Information!");
+                        Console.ForegroundColor = ConsoleColor.Green;
                         bool useSecondInfo = Utilities.getYesNo("\nWould you like to Use Secondary Info?", "Y/N");
                         template.hasSecondaryInfo = useSecondInfo;
                         if (useSecondInfo)
                         {
                             Console.WriteLine("\nEnter Secondary Info: ");
-                            string secondinfo = secondinfo = Utilities.ReadLineOrEscape();
+                            Console.ResetColor();
+                            string secondinfo = Utilities.ReadLineOrEscape();
                             if (secondinfo == null) { return; }
                             template.secondaryInfo = secondinfo;
                         }
@@ -436,9 +487,13 @@ namespace aiTemplate
                     changedTemplates = true;
                     break;
                 case ModifyMenuActions.Prompt:
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Current Prompt: \n");
+                    Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine(template.prompt + "\n\n");
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Enter New Prompt: \n");
+                    Console.ResetColor();
                     template.prompt = Console.ReadLine();
                     if (template.prompt.Contains("{{") && template.prompt.Contains("}}"))
                     {
@@ -466,9 +521,13 @@ namespace aiTemplate
                     changedTemplates = true;
                     break;
                 case ModifyMenuActions.TemplateName:
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Current Template Name: \n");
+                    Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine(template.name + "\n\n");
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Enter New Template Name\n");
+                    Console.ResetColor();
                     template.name = Console.ReadLine();
                     jsonHandler.modifyTemplate(template);
                     changedTemplates = true;
@@ -565,20 +624,27 @@ namespace aiTemplate
         public void createNewTemplate(menusRes menu)
         {
             template newTemp = new template();
+            Console.ForegroundColor = ConsoleColor.Green;
             foreach (string instruction in menu.Instructions)
             {
+               
                 Console.WriteLine(instruction);
                 Console.WriteLine();
             }
             Console.WriteLine("What is the name of the new Template?\n");
+            Console.ResetColor();
             string newTempname = Utilities.ReadLineOrEscape();
             if (newTempname == null) { return; }
             newTemp.name = newTempname;
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("\nWhat is the Prompt?\n");
+            Console.ResetColor();
             string prompt = Utilities.ReadLineOrEscape();
             if (prompt == null) { return; }
             newTemp.prompt = prompt;
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("\nEnter System Info: \n");
+            Console.ResetColor();
             string systemInfo = Utilities.ReadLineOrEscape();
             if (systemInfo == null) { return; }
             newTemp.systemInfo = systemInfo;
@@ -586,7 +652,9 @@ namespace aiTemplate
             newTemp.hasSecondaryInfo = useSecondInfo;
             if (useSecondInfo)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("\nEnter Secondary Info: ");
+                Console.ResetColor();
                 string secondinfo = secondinfo = Utilities.ReadLineOrEscape();
                 if (secondinfo == null) { return; }
                 newTemp.secondaryInfo = secondinfo;
