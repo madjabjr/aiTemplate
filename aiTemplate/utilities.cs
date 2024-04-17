@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
-using System.Xml.Linq;
+using System.Windows.Input;
 
 namespace aiTemplate
 {
@@ -44,9 +46,9 @@ namespace aiTemplate
 
     public class Utilities
     {
-        public static string getMultiLineInput()
+        public static string getMultiLineInput(string prompt)
         {
-            Console.WriteLine("Enter Content Text: ");
+            Console.WriteLine(prompt);
             ConsoleKeyInfo keyInfo = new ConsoleKeyInfo();
             StringBuilder sb = new StringBuilder();
             int index = 0;
@@ -124,21 +126,25 @@ namespace aiTemplate
             ConsoleKeyInfo keyInfo = new ConsoleKeyInfo();
             StringBuilder sb = new StringBuilder();
             int index = 0;
+            int curIndex = 0;
+            int totalwidth = Console.WindowWidth;
+            int startCursorLine = Console.CursorTop;
 
-            while (keyInfo.Key != ConsoleKey.Enter)
+            while (keyInfo.Key != ConsoleKey.Escape)
             {
+                curIndex = Console.CursorLeft;
                 keyInfo = Console.ReadKey(true);
 
                 if (keyInfo.Key == ConsoleKey.Escape)
                 {
                     return null;
                 }
-
                 if (keyInfo.Key == ConsoleKey.Backspace)
                 {
-                    if (index > 0)
+                    
+                    if (curIndex > 0) 
                     {
-                        Console.CursorLeft = index - 1;
+                        Console.CursorLeft = curIndex - 1;
 
                         sb.Remove(index - 1, 1);
 
@@ -146,6 +152,16 @@ namespace aiTemplate
 
                         index--;
                     }
+                    else if (curIndex == 0 &&  Console.CursorTop > startCursorLine)
+                    {
+                         Console.CursorTop--;
+                         sb.Remove(index - 1, 1);
+                         Console.CursorLeft = totalwidth - 1;
+                         curIndex = Console.CursorLeft;
+                         Console.Write(" \b");
+                         index--;
+                    }
+
 
                 }
 
@@ -173,6 +189,18 @@ namespace aiTemplate
             }
 
             return false;
+        }
+        public static List<string> ExtractOtherVariables(string input)
+        {
+            List<string> result = new List<string>();
+            var regex = new Regex(@"{{\s*(?!\\})([^}]+)\s*}}");
+            var matches = regex.Matches(input);
+
+            foreach (Match match in matches)
+            {
+                result.Add(match.Value);
+            }
+            return result;
         }
 
     }
@@ -234,7 +262,7 @@ namespace aiTemplate
                 newTemplates.Add(template);
             }
             newTemplates.Add(newtemplate);
-            string tempFilename = Path.Combine(Environment.SpecialFolder.MyDocuments + "aipromptsTemplate.json");
+            string tempFilename = Path.Combine(Environment.SpecialFolder.MyDocuments + "aipromptTemplate.json");
             if (newTemplates.Count > currTemplates.Count)
             {
                 using (StreamWriter file = File.CreateText(tempFilename))
@@ -243,9 +271,9 @@ namespace aiTemplate
                     serializer.Serialize(file, newTemplates);
                 }
                 // Delete original file
-                File.Delete("aipromptsTemplate.json");
+                File.Delete("aipromptTemplate.json");
 
-                File.Move(tempFilename, "aipromptsTemplate.json");
+                File.Move(tempFilename, "aipromptTemplate.json");
                 return true;
             }
             return false;
@@ -262,13 +290,13 @@ namespace aiTemplate
             List<template> newTemplates = new List<template>();
             foreach (template template in currTemplates)
             {
-                if (template == deltemplate)
+                if (template.name == deltemplate.name)
                 {
                     continue;
                 }
                 newTemplates.Add(template);
             }
-            string tempFilename = Path.Combine(Environment.SpecialFolder.MyDocuments + "aipromptsTemplate.json");
+            string tempFilename = Path.Combine(Environment.SpecialFolder.MyDocuments + "aipromptTemplate.json");
             if (newTemplates.Count < currTemplates.Count) {
                 using (StreamWriter file = File.CreateText(tempFilename))
                 {
@@ -276,9 +304,9 @@ namespace aiTemplate
                     serializer.Serialize(file, newTemplates);
                 }
                 // Delete original file
-                File.Delete("aipromptsTemplate.json");
+                File.Delete("aipromptTemplate.json");
 
-                File.Move(tempFilename, "aipromptsTemplate.json");
+                File.Move(tempFilename, "aipromptTemplate.json");
                 return true;
             }
            return false;
@@ -294,15 +322,15 @@ namespace aiTemplate
             List<template> newTemplates = new List<template>();
             foreach (template template in currTemplates)
             {
-                if (template == modtemplate)
+                if (template.name == modtemplate.name)
                 {
                     newTemplates.Add(modtemplate);
                     continue;
                 }
                 newTemplates.Add(template);
             }
-            string tempFilename = Path.Combine(Environment.SpecialFolder.MyDocuments + "aipromptsTemplate.json");
-            if (newTemplates.Count < currTemplates.Count)
+            string tempFilename = Path.Combine(Environment.SpecialFolder.MyDocuments + "aipromptTemplate.json");
+            if (newTemplates.Count == currTemplates.Count)
             {
                 using (StreamWriter file = File.CreateText(tempFilename))
                 {
@@ -310,9 +338,9 @@ namespace aiTemplate
                     serializer.Serialize(file, newTemplates);
                 }
                 // Delete original file
-                File.Delete("aipromptsTemplate.json");
+                File.Delete("aipromptTemplate.json");
 
-                File.Move(tempFilename, "aipromptsTemplate.json");
+                File.Move(tempFilename, "aipromptTemplate.json");
                 return true;
             }
             return false;
