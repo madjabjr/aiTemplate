@@ -1,8 +1,5 @@
-﻿using Newtonsoft.Json;
-using System.Text;
-using System.Text.Json;
+﻿using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml;
 using Formatting = Newtonsoft.Json.Formatting;
 using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
