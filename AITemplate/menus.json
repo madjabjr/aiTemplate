@@ -1,0 +1,35 @@
+[
+    {
+      "Menuname": "mainMenu",
+      "Instructions": [
+        "1. Create Template",
+        "2. Fill Templates",
+        "3. Delete Template",
+        "4. Modify Template",
+        "5. Display Template",
+        "6. Help or More Info",
+        "7. Exit\n"
+      ]
+    },
+    {
+      "Menuname": "createInstructions",
+      "Instructions": [
+        "You can add additional variables to templates such as speaker by using {{speaker}} within any of the template blocks: ",
+        "Name of Template should be something simple and small.\n",
+        "System Info refers to the how AI should act. For example \"Write like a College Student\".",
+        "Secondary Info refers to any additional information the AI needs, like the speaker or the person who wrote it.",
+        "Prompt is where you write the main quesiton or instructions for the AI",
+        "Press ESC at Any Time to Exit!"
+      ]
+    },
+    {
+      "Menuname": "modifySelect",
+      "Instructions": [
+        "1. System Info",
+        "2. Secondary Info",
+        "3. Prompt",
+        "4. Template Name",
+        "5. Exit"
+      ]
+    }
+]
