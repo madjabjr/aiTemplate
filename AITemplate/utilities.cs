@@ -130,6 +130,9 @@ namespace aiTemplate
             int curIndex = 0;
             int totalwidth = Console.WindowWidth;
             int startCursorLine = Console.CursorTop;
+            bool lastTab = false;
+            int numTimeEnter = 0;
+            int numTabs = 0;
 
             while (keyInfo.Key != ConsoleKey.Escape)
             {
@@ -138,12 +141,21 @@ namespace aiTemplate
 
                 if (keyInfo.Key == ConsoleKey.Escape)
                 {
-                    return null;
+                    break;
                 }
                 if (keyInfo.Key == ConsoleKey.Backspace)
                 {
-
-                    if (curIndex > 0)
+                    if (lastTab)
+                    {
+                        Console.CursorLeft = curIndex - 4;
+                        sb.Remove(index - 1, 3);
+                        numTabs--;
+                        if (numTabs == 0)
+                        {
+                            lastTab = false;
+                        }
+                    }
+                    else if (curIndex > 0)
                     {
                         Console.CursorLeft = curIndex - 1;
 
@@ -165,13 +177,47 @@ namespace aiTemplate
 
 
                 }
-
+                if (keyInfo.Key == ConsoleKey.Enter && numTimeEnter == 0)
+                {
+                    numTimeEnter++;
+                    sb.AppendLine();
+                    Console.CursorTop++;
+                    Console.CursorLeft = 0;
+                    curIndex = 0;
+                    if (lastTab) { lastTab = false; }
+                }
+                else if (keyInfo.Key == ConsoleKey.Enter && numTimeEnter == 1)
+                {
+                    numTimeEnter--;
+                    break;
+                }
+                if (keyInfo.Key == ConsoleKey.Tab)
+                {
+                    if (curIndex + 8 > totalwidth)
+                    {
+                        Console.Write('\n');
+                        sb.AppendLine();
+                        Console.CursorTop++;
+                        Console.CursorLeft = 0;
+                        sb.Append("        ");
+                        Console.Write('\t');
+                        curIndex = Console.CursorLeft;
+                    }
+                    else
+                    {
+                        Console.Write('\t');
+                        sb.Append("        ");
+                        curIndex = Console.CursorLeft;
+                    }
+                    lastTab = true;
+                    numTabs++;
+                }
                 if (keyInfo.KeyChar > 31 && keyInfo.KeyChar < 127)
                 {
                     index++;
                     Console.Write(keyInfo.KeyChar);
                     sb.Append(keyInfo.KeyChar);
-
+                    if (lastTab) { lastTab = false; }
                 }
 
 
