@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using Formatting = Newtonsoft.Json.Formatting;
 using JsonSerializer = Newtonsoft.Json.JsonSerializer;
@@ -41,6 +42,7 @@ namespace aiTemplate
 
     public class Utilities
     {
+        public static readonly string[] tabTypes = ["    ", "        "];
         public static string getMultiLineInput(string prompt)
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -133,29 +135,34 @@ namespace aiTemplate
             bool lastTab = false;
             int numTimeEnter = 0;
             int numTabs = 0;
+            Stopwatch stopWatch = new Stopwatch();
+
 
             while (keyInfo.Key != ConsoleKey.Escape)
             {
                 curIndex = Console.CursorLeft;
                 keyInfo = Console.ReadKey(true);
-
                 if (keyInfo.Key == ConsoleKey.Escape)
                 {
+                    if (stopWatch.IsRunning) { stopWatch.Stop(); }
                     break;
                 }
                 if (keyInfo.Key == ConsoleKey.Backspace)
                 {
-                    if (lastTab)
-                    {
-                        Console.CursorLeft = curIndex - 4;
-                        sb.Remove(index - 1, 3);
-                        numTabs--;
-                        if (numTabs == 0)
-                        {
-                            lastTab = false;
-                        }
-                    }
-                    else if (curIndex > 0)
+                    //if (lastTab)
+                    //{
+                    //    int sizeTab = 0;
+                    //    if (numTabs > 1) { sizeTab = 1; }
+                    //    Console.CursorLeft = curIndex - (4 * (sizeTab + 1));
+                    //    sb.Remove(index - 1, 4 * (sizeTab + 1));
+                    //    numTabs--;
+                    //    index = index + (-4 * (sizeTab + 1));
+                    //    if (numTabs == 0)
+                    //    {
+                    //        lastTab = false;
+                    //    }
+                    //}
+                    if (curIndex > 0)
                     {
                         Console.CursorLeft = curIndex - 1;
 
@@ -175,10 +182,12 @@ namespace aiTemplate
                         index--;
                     }
 
-
+                    if (stopWatch.IsRunning) { stopWatch.Stop(); }
                 }
                 if (keyInfo.Key == ConsoleKey.Enter && numTimeEnter == 0)
                 {
+                    
+                    stopWatch.Start();
                     numTimeEnter++;
                     sb.AppendLine();
                     Console.CursorTop++;
@@ -188,32 +197,56 @@ namespace aiTemplate
                 }
                 else if (keyInfo.Key == ConsoleKey.Enter && numTimeEnter == 1)
                 {
+                    stopWatch.Stop();
                     numTimeEnter--;
-                    break;
-                }
-                if (keyInfo.Key == ConsoleKey.Tab)
-                {
-                    if (curIndex + 8 > totalwidth)
+                    
+                    TimeSpan ts = stopWatch.Elapsed;
+                    if (ts.TotalMilliseconds <= 6000)
                     {
-                        Console.Write('\n');
-                        sb.AppendLine();
-                        Console.CursorTop++;
-                        Console.CursorLeft = 0;
-                        sb.Append("        ");
-                        Console.Write('\t');
-                        curIndex = Console.CursorLeft;
+                        break;
                     }
                     else
                     {
-                        Console.Write('\t');
-                        sb.Append("        ");
-                        curIndex = Console.CursorLeft;
+                        stopWatch.Start();
+                        numTimeEnter++;
+                        sb.AppendLine();
+                        Console.CursorTop++;
+                        Console.CursorLeft = 0;
+                        curIndex = 0;
+                        if (lastTab) { lastTab = false; }
                     }
-                    lastTab = true;
-                    numTabs++;
+                    
                 }
+                //if (keyInfo.Key == ConsoleKey.Tab)
+                //{
+                //    int tabSize = 0;
+                //    if (numTabs > 1)
+                //    {
+                //        tabSize = 1;
+                //    }
+                //    if (curIndex + (4* (tabSize + 1)) > totalwidth)
+                //    {
+                //        Console.Write('\n');
+                //        sb.AppendLine();
+                //        Console.CursorTop++;
+                //        Console.CursorLeft = 0;
+                //        sb.Append(tabTypes[tabSize]);
+                //        Console.Write(tabTypes[tabSize]);
+                //        curIndex = Console.CursorLeft;
+                //    }
+                //    else
+                //    {
+                //        Console.Write(tabTypes[tabSize]);
+                //        sb.Append(tabTypes[tabSize]);
+                //        curIndex = Console.CursorLeft;
+                //    }
+                //    lastTab = true;
+                //    numTabs++;
+                //    if (stopWatch.IsRunning) { stopWatch.Stop(); }
+                //}
                 if (keyInfo.KeyChar > 31 && keyInfo.KeyChar < 127)
                 {
+                    if (stopWatch.IsRunning) { stopWatch.Stop(); }
                     index++;
                     Console.Write(keyInfo.KeyChar);
                     sb.Append(keyInfo.KeyChar);
